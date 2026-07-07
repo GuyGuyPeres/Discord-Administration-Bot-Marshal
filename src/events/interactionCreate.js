@@ -1,11 +1,17 @@
 const { Events, Collection } = require('discord.js');
 const { isModuleEnabled } = require('../database/guildSettings');
 const { getFriendlyErrorMessage } = require('../utils/errorMessages');
+const { openTicket, closeTicketButton } = require('../utils/ticketActions');
 
 const ALWAYS_ON_CATEGORY = 'administration';
 const DEFAULT_COOLDOWN_SECONDS = 3;
 
 const cooldowns = new Collection(); // commandName -> Collection<userId, expiresAtMs>
+
+const BUTTON_HANDLERS = {
+  ticket_open: openTicket,
+  ticket_close: closeTicketButton,
+};
 
 function checkCooldown(command, userId) {
   const cooldownSeconds = command.cooldown ?? DEFAULT_COOLDOWN_SECONDS;
@@ -25,9 +31,36 @@ function checkCooldown(command, userId) {
   return 0;
 }
 
+async function replyWithError(interaction, error, context) {
+  console.error(`Error handling ${context}:`, error);
+
+  const reply = { content: getFriendlyErrorMessage(error), ephemeral: true };
+  try {
+    if (interaction.replied || interaction.deferred) {
+      await interaction.followUp(reply);
+    } else {
+      await interaction.reply(reply);
+    }
+  } catch (replyError) {
+    console.error(`Failed to send error reply for ${context}:`, replyError);
+  }
+}
+
 module.exports = {
   name: Events.InteractionCreate,
   async execute(interaction) {
+    if (interaction.isButton()) {
+      const handler = BUTTON_HANDLERS[interaction.customId];
+      if (!handler) return;
+
+      try {
+        await handler(interaction);
+      } catch (error) {
+        await replyWithError(interaction, error, `button "${interaction.customId}"`);
+      }
+      return;
+    }
+
     if (!interaction.isChatInputCommand()) return;
 
     const command = interaction.client.commands.get(interaction.commandName);
@@ -58,18 +91,7 @@ module.exports = {
     try {
       await command.execute(interaction);
     } catch (error) {
-      console.error(`Error executing "${interaction.commandName}":`, error);
-
-      const reply = { content: getFriendlyErrorMessage(error), ephemeral: true };
-      try {
-        if (interaction.replied || interaction.deferred) {
-          await interaction.followUp(reply);
-        } else {
-          await interaction.reply(reply);
-        }
-      } catch (replyError) {
-        console.error(`Failed to send error reply for "${interaction.commandName}":`, replyError);
-      }
+      await replyWithError(interaction, error, `command "${interaction.commandName}"`);
     }
   },
 };

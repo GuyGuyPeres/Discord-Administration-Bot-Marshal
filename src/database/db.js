@@ -16,6 +16,11 @@ db.exec(`
     mod_log_channel_id TEXT,
     welcome_channel_id TEXT,
     welcome_message TEXT,
+    birthday_channel_id TEXT,
+    ticket_category_id TEXT,
+    ticket_support_role_id TEXT,
+    starboard_channel_id TEXT,
+    starboard_threshold INTEGER NOT NULL DEFAULT 3,
     modules_enabled TEXT DEFAULT '{}'
   );
 
@@ -64,6 +69,98 @@ db.exec(`
     response TEXT NOT NULL,
     PRIMARY KEY (guild_id, trigger)
   );
+
+  CREATE TABLE IF NOT EXISTS reminders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    guild_id TEXT NOT NULL,
+    channel_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    message TEXT NOT NULL,
+    remind_at INTEGER NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_reminders_remind_at ON reminders (remind_at);
+
+  CREATE TABLE IF NOT EXISTS giveaways (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    guild_id TEXT NOT NULL,
+    channel_id TEXT NOT NULL,
+    message_id TEXT NOT NULL,
+    prize TEXT NOT NULL,
+    winner_count INTEGER NOT NULL,
+    ends_at INTEGER NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_giveaways_ends_at ON giveaways (ends_at);
+
+  CREATE TABLE IF NOT EXISTS birthdays (
+    guild_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    month INTEGER NOT NULL,
+    day INTEGER NOT NULL,
+    last_announced_year INTEGER,
+    PRIMARY KEY (guild_id, user_id)
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_birthdays_month_day ON birthdays (month, day);
+
+  CREATE TABLE IF NOT EXISTS tickets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    guild_id TEXT NOT NULL,
+    channel_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'open'
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_tickets_guild_user ON tickets (guild_id, user_id);
+
+  CREATE TABLE IF NOT EXISTS levels (
+    guild_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    xp INTEGER NOT NULL DEFAULT 0,
+    level INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (guild_id, user_id)
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_levels_guild_xp ON levels (guild_id, xp DESC);
+
+  CREATE TABLE IF NOT EXISTS economy (
+    guild_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    balance INTEGER NOT NULL DEFAULT 0,
+    last_daily_at INTEGER,
+    PRIMARY KEY (guild_id, user_id)
+  );
+
+  CREATE TABLE IF NOT EXISTS shop_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    guild_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    price INTEGER NOT NULL,
+    role_id TEXT
+  );
+
+  CREATE TABLE IF NOT EXISTS starboard_posts (
+    guild_id TEXT NOT NULL,
+    source_message_id TEXT NOT NULL,
+    starboard_message_id TEXT NOT NULL,
+    PRIMARY KEY (guild_id, source_message_id)
+  );
 `);
+
+// Migrations for columns added to guild_settings after the table was first created —
+// CREATE TABLE IF NOT EXISTS above is a no-op on a database that predates these columns.
+function ensureColumn(table, column, definition) {
+  const columns = db.prepare(`PRAGMA table_info(${table})`).all().map((c) => c.name);
+  if (!columns.includes(column)) {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
+}
+
+ensureColumn('guild_settings', 'birthday_channel_id', 'TEXT');
+ensureColumn('guild_settings', 'ticket_category_id', 'TEXT');
+ensureColumn('guild_settings', 'ticket_support_role_id', 'TEXT');
+ensureColumn('guild_settings', 'starboard_channel_id', 'TEXT');
+ensureColumn('guild_settings', 'starboard_threshold', 'INTEGER NOT NULL DEFAULT 3');
 
 module.exports = db;

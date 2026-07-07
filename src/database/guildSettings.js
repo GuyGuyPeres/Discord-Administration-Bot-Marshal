@@ -6,6 +6,11 @@ const setModLogChannelStmt = db.prepare('UPDATE guild_settings SET mod_log_chann
 const setWelcomeChannelStmt = db.prepare('UPDATE guild_settings SET welcome_channel_id = ? WHERE guild_id = ?');
 const setWelcomeMessageStmt = db.prepare('UPDATE guild_settings SET welcome_message = ? WHERE guild_id = ?');
 const setModulesEnabledStmt = db.prepare('UPDATE guild_settings SET modules_enabled = ? WHERE guild_id = ?');
+const setBirthdayChannelStmt = db.prepare('UPDATE guild_settings SET birthday_channel_id = ? WHERE guild_id = ?');
+const setTicketCategoryStmt = db.prepare('UPDATE guild_settings SET ticket_category_id = ? WHERE guild_id = ?');
+const setTicketSupportRoleStmt = db.prepare('UPDATE guild_settings SET ticket_support_role_id = ? WHERE guild_id = ?');
+const setStarboardChannelStmt = db.prepare('UPDATE guild_settings SET starboard_channel_id = ? WHERE guild_id = ?');
+const setStarboardThresholdStmt = db.prepare('UPDATE guild_settings SET starboard_threshold = ? WHERE guild_id = ?');
 
 function getGuildSettings(guildId) {
   let settings = getStmt.get(guildId);
@@ -31,6 +36,31 @@ function setWelcomeMessage(guildId, message) {
   setWelcomeMessageStmt.run(message, guildId);
 }
 
+function setBirthdayChannel(guildId, channelId) {
+  getGuildSettings(guildId);
+  setBirthdayChannelStmt.run(channelId, guildId);
+}
+
+function setTicketCategory(guildId, categoryId) {
+  getGuildSettings(guildId);
+  setTicketCategoryStmt.run(categoryId, guildId);
+}
+
+function setTicketSupportRole(guildId, roleId) {
+  getGuildSettings(guildId);
+  setTicketSupportRoleStmt.run(roleId, guildId);
+}
+
+function setStarboardChannel(guildId, channelId) {
+  getGuildSettings(guildId);
+  setStarboardChannelStmt.run(channelId, guildId);
+}
+
+function setStarboardThreshold(guildId, threshold) {
+  getGuildSettings(guildId);
+  setStarboardThresholdStmt.run(threshold, guildId);
+}
+
 function setModuleEnabled(guildId, moduleName, enabled) {
   const settings = getGuildSettings(guildId);
   settings.modules_enabled[moduleName] = enabled;
@@ -47,6 +77,11 @@ module.exports = {
   setModLogChannel,
   setWelcomeChannel,
   setWelcomeMessage,
+  setBirthdayChannel,
+  setTicketCategory,
+  setTicketSupportRole,
+  setStarboardChannel,
+  setStarboardThreshold,
   setModuleEnabled,
   isModuleEnabled,
 };
