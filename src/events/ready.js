@@ -2,6 +2,7 @@ const { Events } = require('discord.js');
 const { startReminderScheduler } = require('../utils/reminderScheduler');
 const { startGiveawayScheduler } = require('../utils/giveawayScheduler');
 const { startBirthdayScheduler } = require('../utils/birthdayScheduler');
+const { startHeartbeatMonitor } = require('../utils/heartbeat');
 
 module.exports = {
   name: Events.ClientReady,
@@ -11,5 +12,6 @@ module.exports = {
     startReminderScheduler(client);
     startGiveawayScheduler(client);
     startBirthdayScheduler(client);
+    startHeartbeatMonitor(client);
   },
 };

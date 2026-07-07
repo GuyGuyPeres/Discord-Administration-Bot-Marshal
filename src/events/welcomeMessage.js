@@ -15,13 +15,15 @@ module.exports = {
       .replaceAll('{user}', `${member}`)
       .replaceAll('{server}', member.guild.name);
 
+    const allowedMentions = { users: [member.id] };
+
     try {
       const imageBuffer = await buildWelcomeCard(member);
       const attachment = new AttachmentBuilder(imageBuffer, { name: 'welcome.png' });
-      await channel.send({ content: text, files: [attachment] });
+      await channel.send({ content: text, files: [attachment], allowedMentions });
     } catch (error) {
       console.error('Failed to send welcome message:', error);
-      await channel.send(text).catch(() => {});
+      await channel.send({ content: text, allowedMentions }).catch(() => {});
     }
   },
 };

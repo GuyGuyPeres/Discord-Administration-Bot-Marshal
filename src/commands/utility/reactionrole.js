@@ -36,6 +36,12 @@ module.exports = {
       if (!message) {
         return interaction.reply({ content: 'Could not find that message in this channel.', ephemeral: true });
       }
+      if (role.position >= interaction.member.roles.highest.position) {
+        return interaction.reply({
+          content: 'You cannot bind a role equal to or higher than your own.',
+          ephemeral: true,
+        });
+      }
       if (role.position >= interaction.guild.members.me.roles.highest.position) {
         return interaction.reply({
           content: 'I cannot assign a role equal to or higher than my own.',

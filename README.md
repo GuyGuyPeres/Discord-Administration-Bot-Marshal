@@ -21,6 +21,7 @@
 - [Tech Stack](#-tech-stack)
 - [Key Features](#-key-features)
 - [Getting Started](#-getting-started)
+- [Deployment](#-deployment)
 - [Usage](#-usage)
 - [Architecture](#-architecture)
 - [Contributing](#-contributing)
@@ -102,6 +103,7 @@
 | Slash commands don't show up in Discord | Commands only registered globally (can take up to ~1 hour) | Set `DEV_GUILD_ID` in `.env` and re-run `npm run deploy-commands` for instant guild-scoped registration |
 | `SQLITE_CANTOPEN` or missing `data/` folder | First run hasn't created the SQLite file yet | The bot creates `data/bot.sqlite` automatically on first launch - make sure the process has write access to the project folder |
 | `DiscordAPIError: Missing Permissions` | The bot's role is below the target role, or lacks the permission | Move the bot's role higher in **Server Settings → Roles**, and re-check the invite's permission scope |
+| `SqliteError: disk I/O error` / `SQLITE_IOERR_SHMOPEN` | Two bot processes (e.g. a local `npm start` and a Docker container) are both writing to the same `data/bot.sqlite` at once | Stop one of them - only ever run a single instance against the same `data/` folder |
 
 </details>
 
@@ -116,6 +118,38 @@
    npm start
    ```
    You should see `Logged in as <YourBot>#0000` in the console once it connects.
+
+---
+
+## 📦 Deployment
+
+Marshal-Bot is self-healing at every layer: a crash-hardened event loop catches per-interaction errors without going down, a heartbeat watchdog force-restarts the process if it's ever disconnected from Discord for more than ~3 minutes, and both deployment options below auto-restart the process on exit.
+
+### Option A: Plain Node + pm2 (no Docker)
+
+[pm2](https://pm2.keymetrics.io/) keeps the bot running, restarts it if it crashes, and survives reboots.
+
+```bash
+npm install -g pm2
+npm run pm2:start      # starts the bot via ecosystem.config.js
+npm run pm2:logs       # tail logs
+pm2 startup            # (optional) make pm2 itself survive a server reboot
+pm2 save
+```
+
+### Option B: Docker
+
+Everything Docker-related lives in [`docker/`](docker/). The image is a multi-stage build (compiles native dependencies like `better-sqlite3` in a builder stage, then ships a slim runtime image), and includes a `HEALTHCHECK` that reads the bot's heartbeat file.
+
+```bash
+docker compose -f docker/docker-compose.yml up -d --build
+docker compose -f docker/docker-compose.yml logs -f   # tail logs
+docker compose -f docker/docker-compose.yml down       # stop
+```
+
+The `data/` folder (SQLite database) is bind-mounted from the repo root, so it persists across container rebuilds. `restart: unless-stopped` in `docker/docker-compose.yml` means Docker restarts the container automatically if the process ever exits.
+
+> ⚠️ Run the bot with **either** plain Node/pm2 **or** Docker at a time, not both simultaneously - two processes writing to the same SQLite file at once will corrupt its WAL state.
 
 ---
 
@@ -201,19 +235,23 @@ I don't have permission to do that. Check my role's permissions and position and
 #### Folder Structure
 
 ```text
-src/
-├── 📁 commands/              # Slash commands, grouped by module - folder name = module category
-│   ├── 📁 administration/    #   ↳ /kick, /ban, /config, etc. (always enabled)
-│   ├── 📁 moderation/        #   ↳ /warn, /automod, /antiraid
-│   ├── 📁 utility/           #   ↳ /remind, /poll, /ticket, /birthday, etc.
-│   ├── 📁 engagement/        #   ↳ /rank, /balance, /suggest, etc.
-│   └── 📁 fun/                #   ↳ /trivia, /tictactoe, /hangman, /8ball, etc.
-├── 📁 events/                 # discord.js event listeners (one file per event/concern)
-├── 📁 database/               # db.js (schema + migrations) + one repository module per feature
-├── 📁 utils/                  # Shared helpers: game logic, schedulers, error mapping, card rendering
-├── 📁 data/                    # Static content (trivia questions, jokes, word lists)
-├── 📄 index.js                # Bot entry point - loads commands/events, logs in
-└── 📄 deploy-commands.js      # Registers slash commands with Discord's API
+.
+├── 📁 docker/                  # Dockerfile + docker-compose.yml (see Deployment)
+├── 📁 data/                    # SQLite database (created automatically, gitignored)
+├── 📄 ecosystem.config.js     # pm2 process-manager config (non-Docker self-healing)
+└── 📁 src/
+    ├── 📁 commands/              # Slash commands, grouped by module - folder name = module category
+    │   ├── 📁 administration/    #   ↳ /kick, /ban, /config, etc. (always enabled)
+    │   ├── 📁 moderation/        #   ↳ /warn, /automod, /antiraid
+    │   ├── 📁 utility/           #   ↳ /remind, /poll, /ticket, /birthday, etc.
+    │   ├── 📁 engagement/        #   ↳ /rank, /balance, /suggest, etc.
+    │   └── 📁 fun/                #   ↳ /trivia, /tictactoe, /hangman, /8ball, etc.
+    ├── 📁 events/                 # discord.js event listeners (one file per event/concern)
+    ├── 📁 database/               # db.js (schema + migrations) + one repository module per feature
+    ├── 📁 utils/                  # Shared helpers: game logic, schedulers, error mapping, card rendering, heartbeat monitor
+    ├── 📁 data/                    # Static content (trivia questions, jokes, word lists)
+    ├── 📄 index.js                # Bot entry point - loads commands/events, logs in
+    └── 📄 deploy-commands.js      # Registers slash commands with Discord's API
 ```
 
 #### Interaction Flow

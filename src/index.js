@@ -51,12 +51,18 @@ for (const file of fs.readdirSync(eventsPath).filter((f) => f.endsWith('.js'))) 
   }
 }
 
+// Both handlers below exit deliberately: after an unhandled rejection or uncaught
+// exception, process state is unreliable. It's safer to fail fast and let the
+// process manager (Docker's `restart: unless-stopped`, or pm2) start a clean
+// process than to keep running in an unknown state.
 process.on('unhandledRejection', (error) => {
   console.error('Unhandled promise rejection:', error);
+  process.exit(1);
 });
 
 process.on('uncaughtException', (error) => {
   console.error('Uncaught exception:', error);
+  process.exit(1);
 });
 
 client.login(process.env.DISCORD_TOKEN);

@@ -1,0 +1,11 @@
+node_modules/
+data/
+.env
+.env.example
+.git/
+.gitignore
+*.log
+docker/
+.dockerignore
+PLAN.md
+README SKILL.md
