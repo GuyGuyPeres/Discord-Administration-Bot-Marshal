@@ -2,6 +2,8 @@ const { Events, Collection } = require('discord.js');
 const { isModuleEnabled } = require('../database/guildSettings');
 const { getFriendlyErrorMessage } = require('../utils/errorMessages');
 const { openTicket, closeTicketButton } = require('../utils/ticketActions');
+const { handleTriviaButton } = require('../utils/triviaGame');
+const { handleTicTacToeButton } = require('../utils/tictactoe');
 
 const ALWAYS_ON_CATEGORY = 'administration';
 const DEFAULT_COOLDOWN_SECONDS = 3;
@@ -11,6 +13,11 @@ const cooldowns = new Collection(); // commandName -> Collection<userId, expires
 const BUTTON_HANDLERS = {
   ticket_open: openTicket,
   ticket_close: closeTicketButton,
+};
+
+const DYNAMIC_BUTTON_HANDLERS = {
+  trivia: handleTriviaButton,
+  ttt: handleTicTacToeButton,
 };
 
 function checkCooldown(command, userId) {
@@ -50,7 +57,8 @@ module.exports = {
   name: Events.InteractionCreate,
   async execute(interaction) {
     if (interaction.isButton()) {
-      const handler = BUTTON_HANDLERS[interaction.customId];
+      const prefix = interaction.customId.split(':')[0];
+      const handler = BUTTON_HANDLERS[interaction.customId] ?? DYNAMIC_BUTTON_HANDLERS[prefix];
       if (!handler) return;
 
       try {

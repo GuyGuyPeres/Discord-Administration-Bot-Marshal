@@ -8,6 +8,7 @@ const {
   setTicketSupportRole,
   setStarboardChannel,
   setStarboardThreshold,
+  setSuggestionsChannel,
   setModuleEnabled,
 } = require('../../database/guildSettings');
 
@@ -100,6 +101,48 @@ module.exports = {
     )
     .addSubcommandGroup((group) =>
       group
+        .setName('starboard')
+        .setDescription('Starboard settings')
+        .addSubcommand((sub) =>
+          sub
+            .setName('channel')
+            .setDescription('Set the channel where starred messages are posted')
+            .addChannelOption((opt) =>
+              opt
+                .setName('channel')
+                .setDescription('The starboard channel')
+                .addChannelTypes(ChannelType.GuildText)
+                .setRequired(true),
+            ),
+        )
+        .addSubcommand((sub) =>
+          sub
+            .setName('threshold')
+            .setDescription('Set how many ⭐ reactions are needed to post to the starboard')
+            .addIntegerOption((opt) =>
+              opt.setName('count').setDescription('Number of stars').setRequired(true).setMinValue(1).setMaxValue(100),
+            ),
+        ),
+    )
+    .addSubcommandGroup((group) =>
+      group
+        .setName('suggestions')
+        .setDescription('Suggestion box settings')
+        .addSubcommand((sub) =>
+          sub
+            .setName('channel')
+            .setDescription('Set the channel where suggestions are posted')
+            .addChannelOption((opt) =>
+              opt
+                .setName('channel')
+                .setDescription('The suggestions channel')
+                .addChannelTypes(ChannelType.GuildText)
+                .setRequired(true),
+            ),
+        ),
+    )
+    .addSubcommandGroup((group) =>
+      group
         .setName('modules')
         .setDescription('Enable or disable bot modules')
         .addSubcommand((sub) =>
@@ -115,6 +158,7 @@ module.exports = {
                   { name: 'Moderation', value: 'moderation' },
                   { name: 'Utility', value: 'utility' },
                   { name: 'Engagement', value: 'engagement' },
+                  { name: 'Fun', value: 'fun' },
                 ),
             )
             .addBooleanOption((opt) =>
@@ -161,6 +205,24 @@ module.exports = {
       const role = interaction.options.getRole('role', true);
       setTicketSupportRole(guildId, role.id);
       return interaction.reply(`**${role.name}** will now be able to see and help with tickets.`);
+    }
+
+    if (group === 'starboard' && sub === 'channel') {
+      const channel = interaction.options.getChannel('channel', true);
+      setStarboardChannel(guildId, channel.id);
+      return interaction.reply(`Starred messages will now be posted in ${channel}.`);
+    }
+
+    if (group === 'starboard' && sub === 'threshold') {
+      const count = interaction.options.getInteger('count', true);
+      setStarboardThreshold(guildId, count);
+      return interaction.reply(`Messages now need **${count}** ⭐ to hit the starboard.`);
+    }
+
+    if (group === 'suggestions' && sub === 'channel') {
+      const channel = interaction.options.getChannel('channel', true);
+      setSuggestionsChannel(guildId, channel.id);
+      return interaction.reply(`Suggestions will now be posted in ${channel}.`);
     }
 
     if (group === 'modules' && sub === 'toggle') {

@@ -35,13 +35,21 @@ async function checkBirthdays(client) {
 
   const entries = getBirthdaysForToday(month, day, year);
   for (const entry of entries) {
-    await announceBirthday(client, entry, year);
+    try {
+      await announceBirthday(client, entry, year);
+    } catch (error) {
+      console.error(`Failed to announce birthday for user ${entry.user_id}:`, error);
+    }
   }
 }
 
+function safeCheck(client) {
+  checkBirthdays(client).catch((error) => console.error('Birthday scheduler error:', error));
+}
+
 function startBirthdayScheduler(client) {
-  checkBirthdays(client);
-  setInterval(() => checkBirthdays(client), CHECK_INTERVAL_MS).unref();
+  safeCheck(client);
+  setInterval(() => safeCheck(client), CHECK_INTERVAL_MS).unref();
 }
 
 module.exports = { startBirthdayScheduler };

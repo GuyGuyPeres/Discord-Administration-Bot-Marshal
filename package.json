@@ -7,10 +7,28 @@
     "start": "node src/index.js",
     "deploy-commands": "node src/deploy-commands.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "discord",
+    "discord-bot",
+    "discord.js",
+    "moderation",
+    "administration",
+    "automod"
+  ],
+  "author": "GuyGuyPeres",
   "license": "MIT",
   "type": "commonjs",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GuyGuyPeres/Discord-Administartion-Bot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/GuyGuyPeres/Discord-Administartion-Bot/issues"
+  },
+  "homepage": "https://github.com/GuyGuyPeres/Discord-Administartion-Bot#readme",
   "dependencies": {
     "@napi-rs/canvas": "^1.0.2",
     "better-sqlite3": "^12.11.1",

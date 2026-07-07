@@ -44,13 +44,21 @@ async function endGiveaway(client, giveaway) {
 async function checkGiveaways(client) {
   const due = getDueGiveaways(Math.floor(Date.now() / 1000));
   for (const giveaway of due) {
-    await endGiveaway(client, giveaway);
+    try {
+      await endGiveaway(client, giveaway);
+    } catch (error) {
+      console.error(`Failed to end giveaway ${giveaway.id}:`, error);
+    }
   }
 }
 
+function safeCheck(client) {
+  checkGiveaways(client).catch((error) => console.error('Giveaway scheduler error:', error));
+}
+
 function startGiveawayScheduler(client) {
-  checkGiveaways(client);
-  setInterval(() => checkGiveaways(client), CHECK_INTERVAL_MS).unref();
+  safeCheck(client);
+  setInterval(() => safeCheck(client), CHECK_INTERVAL_MS).unref();
 }
 
 module.exports = { startGiveawayScheduler };

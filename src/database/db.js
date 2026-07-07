@@ -21,6 +21,7 @@ db.exec(`
     ticket_support_role_id TEXT,
     starboard_channel_id TEXT,
     starboard_threshold INTEGER NOT NULL DEFAULT 3,
+    suggestions_channel_id TEXT,
     modules_enabled TEXT DEFAULT '{}'
   );
 
@@ -146,6 +147,16 @@ db.exec(`
     starboard_message_id TEXT NOT NULL,
     PRIMARY KEY (guild_id, source_message_id)
   );
+
+  CREATE TABLE IF NOT EXISTS suggestions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    guild_id TEXT NOT NULL,
+    channel_id TEXT NOT NULL,
+    message_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    content TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending'
+  );
 `);
 
 // Migrations for columns added to guild_settings after the table was first created —
@@ -162,5 +173,6 @@ ensureColumn('guild_settings', 'ticket_category_id', 'TEXT');
 ensureColumn('guild_settings', 'ticket_support_role_id', 'TEXT');
 ensureColumn('guild_settings', 'starboard_channel_id', 'TEXT');
 ensureColumn('guild_settings', 'starboard_threshold', 'INTEGER NOT NULL DEFAULT 3');
+ensureColumn('guild_settings', 'suggestions_channel_id', 'TEXT');
 
 module.exports = db;

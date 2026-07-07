@@ -11,6 +11,7 @@ const setTicketCategoryStmt = db.prepare('UPDATE guild_settings SET ticket_categ
 const setTicketSupportRoleStmt = db.prepare('UPDATE guild_settings SET ticket_support_role_id = ? WHERE guild_id = ?');
 const setStarboardChannelStmt = db.prepare('UPDATE guild_settings SET starboard_channel_id = ? WHERE guild_id = ?');
 const setStarboardThresholdStmt = db.prepare('UPDATE guild_settings SET starboard_threshold = ? WHERE guild_id = ?');
+const setSuggestionsChannelStmt = db.prepare('UPDATE guild_settings SET suggestions_channel_id = ? WHERE guild_id = ?');
 
 function getGuildSettings(guildId) {
   let settings = getStmt.get(guildId);
@@ -61,6 +62,11 @@ function setStarboardThreshold(guildId, threshold) {
   setStarboardThresholdStmt.run(threshold, guildId);
 }
 
+function setSuggestionsChannel(guildId, channelId) {
+  getGuildSettings(guildId);
+  setSuggestionsChannelStmt.run(channelId, guildId);
+}
+
 function setModuleEnabled(guildId, moduleName, enabled) {
   const settings = getGuildSettings(guildId);
   settings.modules_enabled[moduleName] = enabled;
@@ -82,6 +88,7 @@ module.exports = {
   setTicketSupportRole,
   setStarboardChannel,
   setStarboardThreshold,
+  setSuggestionsChannel,
   setModuleEnabled,
   isModuleEnabled,
 };
