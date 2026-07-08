@@ -1,0 +1,63 @@
+<mxfile host="app.diagrams.net" version="24.7.5">
+  <diagram name="Architecture" id="marshal-bot-architecture">
+    <mxGraphModel dx="1170" dy="620" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1170" pageHeight="620" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="Marshal-Bot - Architecture Overview" style="text;html=1;align=center;verticalAlign=middle;fontSize=20;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="10" width="560" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="discord" value="Discord&lt;br&gt;(Client + Servers)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#5865F2;strokeColor=#4752C4;fontColor=#FFFFFF;fontSize=16;fontStyle=1;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="300" y="55" width="560" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="container" value="Marshal-Bot - Node.js process (src/)" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;strokeColor=#999999;fillColor=none;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontColor=#666666;fontSize=11;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="250" y="165" width="640" height="170" as="geometry" />
+        </mxCell>
+
+        <mxCell id="commands" value="Commands + Events&lt;br&gt;interactionCreate, moderation,&lt;br&gt;logging, automod..." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EEF3FF;strokeColor=#5865F2;fontSize=13;fontStyle=1;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="280" y="195" width="280" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="schedulers" value="Background Schedulers&lt;br&gt;reminders, giveaways,&lt;br&gt;birthdays, alerts" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EEF3FF;strokeColor=#5865F2;fontSize=13;fontStyle=1;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="580" y="195" width="280" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sqlite" value="SQLite Database&lt;br&gt;data/bot.sqlite" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#003B57;strokeColor=#00283D;fontColor=#FFFFFF;fontSize=14;fontStyle=1;arcSize=10;" vertex="1" parent="1">
+          <mxGeometry x="350" y="455" width="340" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="pikud" value="Pikud Haoref API&lt;br&gt;unofficial wrapper by eladnava&lt;br&gt;github.com/eladnava/pikud-haoref-api" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FDECEA;strokeColor=#E53935;fontSize=13;fontStyle=1;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="970" y="195" width="190" height="110" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" value="interactions / replies" style="html=1;endArrow=block;startArrow=block;fontSize=10;" edge="1" parent="1" source="discord" target="commands">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e2" value="scheduled messages" style="html=1;endArrow=block;startArrow=block;fontSize=10;" edge="1" parent="1" source="discord" target="schedulers">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e3" value="read / write" style="html=1;endArrow=block;startArrow=block;fontSize=10;" edge="1" parent="1" source="commands" target="sqlite">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e4" value="read / write" style="html=1;endArrow=block;startArrow=block;fontSize=10;" edge="1" parent="1" source="schedulers" target="sqlite">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e5" value="poll every 5s" style="html=1;endArrow=block;startArrow=none;fontSize=10;" edge="1" parent="1" source="pikud" target="schedulers">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="footer" value="Data via pikud-haoref-api by Elad Nava - github.com/eladnava/pikud-haoref-api (unofficial Pikud Haoref API wrapper)" style="text;html=1;align=center;verticalAlign=middle;fontSize=10;fontColor=#888888;" vertex="1" parent="1">
+          <mxGeometry x="250" y="590" width="640" height="20" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

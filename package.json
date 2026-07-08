@@ -1,6 +1,6 @@
 {
   "name": "marshal-bot",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "A free, open-source, multi-feature Discord administration and moderation bot.",
   "main": "src/index.js",
   "scripts": {
@@ -36,6 +36,8 @@
     "@napi-rs/canvas": "^1.0.2",
     "better-sqlite3": "^12.11.1",
     "discord.js": "^14.26.4",
-    "dotenv": "^17.4.2"
+    "dotenv": "^17.4.2",
+    "https-proxy-agent": "^7.0.6",
+    "pikud-haoref-api": "^5.0.3"
   }
 }

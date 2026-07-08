@@ -6,7 +6,7 @@
 
 ### A free, open-source, all-in-one Discord bot - administration, moderation, utility, engagement, and fun in one install
 
-![Version](https://img.shields.io/badge/version-1.1.0-orange?style=for-the-badge)
+![Version](https://img.shields.io/badge/version-1.2.0-orange?style=for-the-badge)
 ![Node](https://img.shields.io/badge/node.js-%3E%3D18-339933?style=for-the-badge&logo=node.js&logoColor=white)
 ![discord.js](https://img.shields.io/badge/discord.js-v14-5865F2?style=for-the-badge&logo=discord&logoColor=white)
 ![SQLite](https://img.shields.io/badge/database-SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
@@ -42,6 +42,7 @@ See [CHANGELOG.md](CHANGELOG.md) for release history.
 | Database | [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) (embedded SQLite, no server required) | ^12.11 |
 | Image generation | [@napi-rs/canvas](https://github.com/Brooooooklyn/canvas) (prebuilt binaries, no native build tools) | ^1.0 |
 | Config management | [dotenv](https://github.com/motdotla/dotenv) | ^17.4 |
+| Home Front Command alerts | [pikud-haoref-api](https://github.com/eladnava/pikud-haoref-api) by [Elad Nava](https://github.com/eladnava) (unofficial Pikud Haoref wrapper) | ^5.0 |
 | Command registration | Discord REST API (`discord.js` `REST` + `Routes`) | - |
 | Containerization | [Docker](https://www.docker.com/) (multi-stage build) + Docker Compose | - |
 | Process manager (non-Docker) | [pm2](https://pm2.keymetrics.io/) | - |
@@ -61,6 +62,7 @@ See [CHANGELOG.md](CHANGELOG.md) for release history.
 - **Real self-healing** - a heartbeat watchdog force-exits the process if it's ever disconnected from Discord for more than ~3 minutes, and both deployment options (Docker's `restart: unless-stopped` + `HEALTHCHECK`, or pm2's `autorestart`) bring it straight back up. Verified live by repeatedly crashing a running container and confirming automatic recovery.
 - **Consistent role-hierarchy enforcement** - every feature that can grant a role or moderate a member (admin commands, reaction roles, tickets, the shop) checks the acting user's own role position, not just the bot's, closing the self-escalation path a naive implementation would miss.
 - **Self-hosting first** - zero external services required: SQLite lives in a local file, Discord's native Poll API is used instead of a custom voting system, and the only network calls are to Discord's API and (optionally) the meme endpoint.
+- **Real-time Home Front Command alerts** - polls the [pikud-haoref-api](https://github.com/eladnava/pikud-haoref-api) unofficial Pikud Haoref wrapper and broadcasts rocket/missile and other alerts to a configured channel within seconds, with optional per-server area filtering and role pings via `/alerts`.
 
 ---
 
@@ -100,6 +102,8 @@ See [CHANGELOG.md](CHANGELOG.md) for release history.
    ```
 
    > ⚠️ **Never commit your `.env` file.** It contains your bot's live token - treat it like a password. `.gitignore` already excludes it, but always double-check before pushing.
+
+   > 🇮🇱 **Using `/alerts`?** The Home Front Command API only responds to requests from within Israel. If you're hosting outside Israel, set `PIKUD_HAOREF_PROXY` in `.env` to an Israeli HTTP(S) proxy URL; otherwise leave it empty.
 
 <details>
 <summary>🩹 <strong>Troubleshooting</strong></summary>
@@ -189,6 +193,7 @@ Marshal-Bot is controlled entirely through Discord **slash commands** - there is
 | Utility | `/giveaway` | Start a timed giveaway with automatic winner selection |
 | Utility | `/birthday set\|remove\|next` | Manage your birthday and view upcoming ones |
 | Utility | `/ticket panel` | Post a button that opens private support ticket channels |
+| Utility | `/alerts` | Configure real-time Home Front Command (Pikud Haoref) alert broadcasting - channel, toggle, role ping, area filter, status, test |
 | Engagement | `/rank` / `/leaderboard` | View XP level/progress or the server leaderboard |
 | Engagement | `/balance` / `/daily` / `/pay` | View coins, claim a daily reward, or send coins to another member |
 | Engagement | `/shop list\|buy\|add\|remove` | Browse or manage the server's coin shop |
@@ -240,6 +245,12 @@ I don't have permission to do that. Check my role's permissions and position and
 
 ## 🏗 Architecture
 
+<div align="center">
+<img src="docs/architecture.svg" alt="Marshal-Bot architecture diagram" width="100%" />
+</div>
+
+Editable source: [`docs/architecture.drawio`](docs/architecture.drawio) - open it at [diagrams.net](https://app.diagrams.net/) (draw.io) to modify.
+
 #### Folder Structure
 
 ```text
@@ -273,7 +284,7 @@ Discord Interaction → interactionCreate.js
                                   └─ on error ──▶ getFriendlyErrorMessage() ──▶ safe ephemeral reply
 ```
 
-Background schedulers (reminders, giveaways, birthdays) run on their own interval, independent of the interaction flow, each wrapped in its own error boundary so one failed job never blocks the rest.
+Background schedulers (reminders, giveaways, birthdays, Home Front Command alerts) run on their own interval, independent of the interaction flow, each wrapped in its own error boundary so one failed job never blocks the rest.
 
 ---
 
@@ -292,6 +303,12 @@ Issues and pull requests are welcome!
 - Keep functions focused - one command, one job; shared logic belongs in `src/utils/`.
 
 </details>
+
+---
+
+## 🙏 Credits
+
+- Real-time Home Front Command alerts (`/alerts`) are powered by [**pikud-haoref-api**](https://github.com/eladnava/pikud-haoref-api), an unofficial Pikud Haoref API wrapper created by [**Elad Nava**](https://github.com/eladnava). Marshal-Bot only polls this library for active alerts and claims no ownership over it or the underlying Pikud Haoref data - all credit for that integration goes to its author.
 
 ---
 

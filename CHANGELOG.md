@@ -1,5 +1,22 @@
 # Changelog
 
+## v1.2.0 - Real-Time Home Front Command Alerts
+
+Adds real-time Pikud Haoref (Home Front Command) alert broadcasting, an architecture diagram, and a mention-injection fix caught during testing.
+
+### Alerts
+- `/alerts` - configure real-time rocket/missile and other Home Front Command alert broadcasting per server: `toggle`, `channel`, `role`, `cities` (area filter), `status`, `test`
+- `src/utils/alertScheduler.js` - polls the unofficial [pikud-haoref-api](https://github.com/eladnava/pikud-haoref-api) (by Elad Nava) every 5s and broadcasts new alerts to every configured server, with edge-triggered de-duplication so an ongoing alert isn't re-announced every poll
+- Optional `PIKUD_HAOREF_PROXY` env var for bots hosted outside Israel, since the underlying API only responds to requests from within Israel
+- New `alerts_config` table (per-guild channel, enabled flag, ping role, area filter)
+
+### Documentation
+- `docs/architecture.drawio` + `docs/architecture.svg` - an editable draw.io architecture diagram, embedded at the top of the README's Architecture section
+- README credits [Elad Nava](https://github.com/eladnava) and pikud-haoref-api directly for the alerts data source
+
+### Security fix
+- Fixed a mass-ping path in `/alerts role`: Discord's role picker lists `@everyone` as a selectable role, and since `@everyone`'s role ID is the guild ID, selecting it produced a real `@everyone` ping on every future alert. `/alerts role` now rejects `@everyone` outright.
+
 ## v1.1.0 - Docker Release
 
 Adds an official Docker deployment path alongside the existing plain-Node setup, plus real self-healing and two security fixes.

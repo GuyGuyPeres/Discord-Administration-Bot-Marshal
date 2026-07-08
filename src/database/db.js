@@ -157,6 +157,14 @@ db.exec(`
     content TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'pending'
   );
+
+  CREATE TABLE IF NOT EXISTS alerts_config (
+    guild_id TEXT PRIMARY KEY,
+    enabled INTEGER NOT NULL DEFAULT 0,
+    channel_id TEXT,
+    role_id TEXT,
+    cities TEXT NOT NULL DEFAULT '[]'
+  );
 `);
 
 // Migrations for columns added to guild_settings after the table was first created -
